@@ -1,0 +1,18 @@
+# Dataset and LPDG materials are not ours to share - never commit them
+data/
+docs-from-lpdg/
+*.zip
+*.parquet
+*.xlsx
+
+# Local environment
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.DS_Store
+
+# Generated at runtime (predictions.csv IS committed deliberately)
+output/
+predictions_baseline.csv
