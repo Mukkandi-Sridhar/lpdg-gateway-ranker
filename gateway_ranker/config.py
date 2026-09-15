@@ -20,6 +20,10 @@ from pathlib import Path
 import pandas as pd
 
 
+class ConfigError(ValueError):
+    """A setting (environment variable or CLI flag) has an invalid value."""
+
+
 @dataclass(frozen=True)
 class Settings:
     data_dir: Path
@@ -36,7 +40,10 @@ class Settings:
 
 
 def load_settings(**overrides: object) -> Settings:
-    """Read settings from the environment; keyword overrides that are not None win (CLI flags)."""
+    """Read settings from the environment; keyword overrides that are not None win (CLI flags).
+
+    Raises ConfigError for an invalid value.
+    """
     values = {
         "data_dir": os.environ.get("DATA_DIR", "data"),
         "predictions_path": os.environ.get("PREDICTIONS_PATH", "predictions.csv"),
@@ -50,22 +57,31 @@ def load_settings(**overrides: object) -> Settings:
     try:
         n_weeks = int(str(values["n_weeks"]))
     except ValueError:
-        raise ValueError(f"N_WEEKS must be a whole number, got {values['n_weeks']!r}") from None
+        raise ConfigError(f"N_WEEKS must be a whole number, got {values['n_weeks']!r}") from None
     if n_weeks < 1:
-        raise ValueError(f"N_WEEKS must be at least 1, got {n_weeks}")
+        raise ConfigError(f"N_WEEKS must be at least 1, got {n_weeks}")
+    try:
+        first_week = parse_monday(str(values["first_week"]))
+    except ValueError as error:
+        raise ConfigError(f"FIRST_WEEK: {error}") from None
     return Settings(
         data_dir=Path(str(values["data_dir"])),
         predictions_path=Path(str(values["predictions_path"])),
         results_path=Path(str(values["results_path"])),
         ranker=str(values["ranker"]),
-        first_week=parse_monday(str(values["first_week"])),
+        first_week=first_week,
         n_weeks=n_weeks,
         log_level=str(values["log_level"]).upper(),
     )
 
 
 def parse_monday(value: str) -> pd.Timestamp:
-    """'2026-02-02' -> Timestamp('2026-02-02 00:00 UTC'). Raises ValueError unless it is a Monday date."""
+    """'2026-02-02' -> Timestamp('2026-02-02 00:00 UTC').
+
+    Raises ValueError unless the value is a Monday at 00:00 UTC. A timestamp with a non-zero
+    UTC offset is refused rather than converted: '2026-02-02T00:00-05:00' is Monday 05:00 UTC,
+    and accepting it would move the data cutoff into the week being predicted.
+    """
     try:
         ts = pd.Timestamp(value)
     except (ValueError, TypeError):
@@ -74,6 +90,10 @@ def parse_monday(value: str) -> pd.Timestamp:
         raise ValueError(f"not a date: {value!r} (expected YYYY-MM-DD)")
     if ts.tzinfo is None:
         ts = ts.tz_localize("UTC")
+    elif ts.utcoffset() != pd.Timedelta(0):
+        raise ValueError(f"{value!r} is not in UTC; give a plain date (YYYY-MM-DD)")
+    else:
+        ts = ts.tz_convert("UTC")
     if ts != ts.normalize() or ts.dayofweek != 0:
         raise ValueError(f"{value!r} is not a Monday at 00:00 UTC")
     return ts

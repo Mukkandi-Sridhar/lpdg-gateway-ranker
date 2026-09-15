@@ -62,6 +62,18 @@ Source material for AI-USAGE.md.
 - **Fix:** the Makefile uses `python3.12` (overridable), the README says 3.11 or 3.12,
   `requires-python` is `<3.13`, and Docker stays the recommended path.
 
+## 8. Code review found five gaps in AI-written error handling (2026-09-15)
+- **What the AI wrote:** loaders that let pyarrow/pandas exceptions escape, `POST /run`
+  treating every `ValueError` as a configuration problem, `parse_monday` accepting
+  timestamps with a UTC offset, and no check for fleet-wide silence.
+- **How it was caught:** a structured review of the whole repository, with each suspicion
+  reproduced on synthetic data before it counted. For example, a half-copied parquet file
+  made `/run` answer `config_error` without naming the file. `2026-02-02T00:00-05:00` was
+  accepted as a Monday although it is 05:00 UTC, which would leak 5 hours of the predicted week.
+- **Fix:** `DataError` naming the file for unreadable parquet, Excel and CSV files; a separate
+  `ConfigError`; offsets refused; a warning when most gateways go silent in the same week.
+  All kept as tests in `tests/test_error_handling.py`.
+
 ## 4. Test assumed noise-free fixtures (2026-09-15)
 - **What the AI wrote:** a test expecting the reason to lead with "no data for 5 hours".
 - **How it was caught:** the random noise in the fixture flagged 14 anomalous hours, which

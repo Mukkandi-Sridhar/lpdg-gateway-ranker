@@ -18,22 +18,33 @@ import json
 import logging
 import threading
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import Path as PathParam
 from fastapi.responses import JSONResponse
 
+from api.schemas import ErrorResponse, GatewayExplanation, Health, Rankings, RunError, RunSummary, Weeks
 from gateway_ranker.checks import DataError
-from gateway_ranker.config import Settings, configure_logging, load_settings, parse_monday
+from gateway_ranker.config import ConfigError, Settings, configure_logging, load_settings, parse_monday
 from gateway_ranker.loading import normalize_gateway_id
 from gateway_ranker.pipeline import run_pipeline
 
 log = logging.getLogger("api")
 
-
 REQUIRED_SUMMARY_KEYS = {"finished_at", "ranker", "weeks", "scored_weeks", "latest_week", "duration_sec", "data"}
+
+WeekQuery = Annotated[str | None, Query(
+    description="A Monday, YYYY-MM-DD (UTC). Default: the latest ranked week.", examples=["2026-02-02"])]
+NOT_READY: dict[int | str, dict[str, Any]] = {
+    503: {"model": ErrorResponse, "description": "No rankings yet, or the results file is unreadable: call POST /run"},
+}
+BAD_WEEK: dict[int | str, dict[str, Any]] = {
+    404: {"model": ErrorResponse, "description": "No ranking for that week, or unknown gateway"},
+    422: {"model": ErrorResponse, "description": "week is not a Monday date in UTC, or the gateway ID is malformed"},
+}
 
 
 class ResultsStore:
@@ -118,10 +129,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except ValueError as error:
             raise HTTPException(422, f"week: {error}") from None
         if key not in results["weeks"]:
-            raise HTTPException(404, f"no ranking for week {key}; available weeks are {available[0]} to {available[-1]}")
+            raise HTTPException(
+                404, f"no ranking for week {key}; available weeks are {available[0]} to {available[-1]}")
         return key
 
-    @app.get("/health")
+    @app.get("/health", response_model=Health, responses={503: {"model": Health, "description": "Something is broken"}})
     def health() -> JSONResponse:
         """200 when data, telemetry and rankings are all in place; 503 otherwise, with the failing check."""
         telemetry_dir = settings.data_dir / "telemetry"
@@ -136,14 +148,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                   "results": results is not None}
         healthy = all(checks.values())
         body: dict[str, Any] = {"status": "ok" if healthy else "unhealthy", "checks": checks,
-                                "run_in_progress": run_state.lock.locked(), "last_run_error": run_state.last_error}
+                                "run_in_progress": run_state.lock.locked(), "last_run_error": run_state.last_error,
+                                "last_run": None, "stale": None}
         if results is not None:
             summary = results["summary"]
             body["last_run"] = {k: summary[k] for k in ["finished_at", "ranker", "latest_week", "duration_sec"]}
+            body["last_run"]["warnings"] = summary.get("warnings", [])
             body["stale"] = months_on_disk != summary["data"]["telemetry_months"]
         return JSONResponse(body, status_code=200 if healthy else 503)
 
-    @app.get("/weeks")
+    @app.get("/weeks", response_model=Weeks, responses=NOT_READY)
     def weeks() -> dict[str, Any]:
         """Every week with a ranking. scored_weeks are the ones written to predictions.csv."""
         results = results_or_503()
@@ -151,9 +165,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"weeks": list(results["weeks"]), "scored_weeks": summary["scored_weeks"],
                 "latest_week": summary["latest_week"]}
 
-    @app.get("/rankings")
-    def rankings(week: str | None = None) -> dict[str, Any]:
-        """The 15 gateways to visit in a week (YYYY-MM-DD, a Monday), strongest first. Default: latest week."""
+    @app.get("/rankings", response_model=Rankings, responses={**BAD_WEEK, **NOT_READY})
+    def rankings(week: WeekQuery = None) -> dict[str, Any]:
+        """The 15 gateways to visit in a week, strongest evidence first."""
         results = results_or_503()
         key = pick_week(results, week)
         top = [g for g in results["weeks"][key] if g["rank"] is not None]
@@ -164,8 +178,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "gateways": [{k: g[k] for k in ["rank", "gateway_id", "score", "reason"]} for g in top],
         }
 
-    @app.get("/gateways/{gateway_id}")
-    def explain_gateway(gateway_id: str, week: str | None = None) -> dict[str, Any]:
+    @app.get("/gateways/{gateway_id}", response_model=GatewayExplanation, responses={**BAD_WEEK, **NOT_READY})
+    def explain_gateway(
+        gateway_id: Annotated[str, PathParam(description="Either ID format, any case", examples=["0A:00:00:00:00:FF"])],
+        week: WeekQuery = None,
+    ) -> dict[str, Any]:
         """Why a gateway is where it is in a week: rank or distance from the 15, score parts, reason."""
         try:
             gid = normalize_gateway_id(gateway_id)
@@ -193,22 +210,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "reason": entry["reason"], "components": entry["components"],
                 "ranker": results["summary"]["ranker"]}
 
-    @app.post("/run")
+    @app.post("/run", response_model=RunSummary, responses={
+        409: {"model": ErrorResponse, "description": "A run is already in progress"},
+        500: {"model": RunError, "description": "The run failed; the previous rankings are still served"},
+    })
     def run() -> Any:
-        """Re-read the data folder and rebuild all rankings. 409 if a run is already going.
-
-        Takes a few seconds on the full dataset. If it fails, the previous rankings keep being served.
-        """
+        """Re-read the data folder and rebuild all rankings (a few seconds on the full dataset)."""
         if not run_state.lock.acquire(blocking=False):
-            raise HTTPException(409, f"a run is already in progress (started {run_state.started_at}); retry when it finishes")
-        run_state.started_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            raise HTTPException(409, f"a run is already in progress (started {run_state.started_at}); "
+                                     "retry when it finishes")
+        run_state.started_at = datetime.now(UTC).isoformat(timespec="seconds")
         try:
             summary = run_pipeline(settings)
         except DataError as error:
             return _run_failed(run_state, "data_error", str(error))
-        except ValueError as error:
+        except ConfigError as error:
             return _run_failed(run_state, "config_error", str(error))
-        except Exception as error:  # noqa: BLE001 - report, keep serving the old results
+        except Exception as error:  # report it and keep serving the old results
             log.exception("run failed unexpectedly")
             return _run_failed(run_state, "internal_error", f"{type(error).__name__}; see the server log")
         finally:
@@ -217,7 +235,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"status": "ok", "ranker": summary["ranker"], "weeks_ranked": len(summary["weeks"]),
                 "scored_weeks": summary["scored_weeks"], "latest_week": summary["latest_week"],
                 "rows": summary["rows"], "duration_sec": summary["duration_sec"],
-                "data_months": summary["data"]["telemetry_months"]}
+                "data_months": summary["data"]["telemetry_months"], "warnings": summary["warnings"]}
 
     return app
 

@@ -3,7 +3,7 @@
 Every loader:
 - normalises gateway IDs to 12 uppercase hex characters ("06:39:ea:.." -> "0639EA..")
 - parses every date as a UTC timestamp, so all files are cut at the same instant
-- checks its input and raises DataError when the input is wrong
+- checks its input and raises DataError, naming the file, when the input is wrong or unreadable
 
 The data folder is read fresh on every call. Nothing is cached at module level, so
 a new telemetry month dropped into data/telemetry/ is picked up by the next load.
@@ -12,11 +12,12 @@ from __future__ import annotations
 
 import logging
 import re
+import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
+import pyarrow as pa
 import pyarrow.parquet as pq
 
 from gateway_ranker.checks import (
@@ -134,15 +135,7 @@ def load_telemetry(data_dir: Path, report: dict[str, object] | None = None) -> p
     files = sorted((data_dir / "telemetry").glob("month=*/*.parquet"))
     if not files:
         raise DataError(f"no telemetry files found under {data_dir / 'telemetry'} (expected month=YYYY-MM/*.parquet)")
-    frames = []
-    for path in files:
-        source = str(path.relative_to(data_dir))
-        missing = [c for c in TELEMETRY_COLUMNS if c not in pq.read_schema(path).names]
-        if missing:
-            raise DataError(f"{source}: missing required columns {missing}")
-        part = pd.read_parquet(path, columns=TELEMETRY_COLUMNS)
-        require_non_empty(part, source)
-        frames.append(part)
+    frames = [_read_telemetry_file(path, str(path.relative_to(data_dir))) for path in files]
     df = pd.concat(frames, ignore_index=True)
     rows_read = len(df)
 
@@ -173,6 +166,23 @@ def load_telemetry(data_dir: Path, report: dict[str, object] | None = None) -> p
     return df
 
 
+def _read_telemetry_file(path: Path, source: str) -> pd.DataFrame:
+    """One telemetry partition file, checked for readability, required columns and rows."""
+    try:
+        names = pq.read_schema(path).names
+        missing = [c for c in TELEMETRY_COLUMNS if c not in names]
+        part = pd.read_parquet(path, columns=TELEMETRY_COLUMNS) if not missing else None
+    except (OSError, pa.ArrowException) as error:
+        raise DataError(
+            f"{source}: cannot be read as parquet ({error}); if the file is still being copied, "
+            "wait for the copy to finish and run again"
+        ) from None
+    if part is None:
+        raise DataError(f"{source}: missing required columns {missing}")
+    require_non_empty(part, source)
+    return part
+
+
 def load_master(data_dir: Path) -> pd.DataFrame:
     """Read gateway_master.csv (Latin-1 in the delivered data)."""
     path = data_dir / "gateway_master.csv"
@@ -183,7 +193,8 @@ def load_master(data_dir: Path) -> pd.DataFrame:
     require_valid_ids(df["gateway_id"], path.name)
     dupes = df["gateway_id"].duplicated()
     if dupes.any():
-        raise DataError(f"{path.name}: gateway_id listed more than once, e.g. {df.loc[dupes, 'gateway_id'].head(3).tolist()}")
+        examples = df.loc[dupes, "gateway_id"].head(3).tolist()
+        raise DataError(f"{path.name}: gateway_id listed more than once, e.g. {examples}")
     df["installed_on"] = parse_utc(df["installed_on"], path.name, "installed_on")
     df["decommissioned_on"] = parse_utc(df["decommissioned_on"], path.name, "decommissioned_on", allow_blank=True)
     return df
@@ -228,7 +239,10 @@ def load_engineer_review(data_dir: Path, report: dict[str, object]) -> pd.DataFr
         return _missing_optional(data_dir / "engineer_review_*.xlsx", REVIEW_COLUMNS, ["reviewed_on"], report)
     frames = []
     for path in paths:
-        part = pd.read_excel(path)
+        try:
+            part = pd.read_excel(path)
+        except (OSError, ValueError, KeyError, zipfile.BadZipFile) as error:
+            raise DataError(f"{path.name}: cannot be read as Excel ({type(error).__name__}: {error})") from None
         require_columns(part, REVIEW_COLUMNS, path.name)
         part["gateway_id"] = normalize_gateway_ids(part["gateway_id"])
         require_valid_ids(part["gateway_id"], path.name)
@@ -242,13 +256,17 @@ def _read_csv(path: Path) -> pd.DataFrame:
     if not path.exists():
         raise DataError(f"required file not found: {path}")
     try:
-        return pd.read_csv(path, encoding="utf-8", dtype={"gateway_id": "string"})
-    except UnicodeDecodeError:
-        log.info("%s is not UTF-8; reading as Latin-1", path.name)
-        return pd.read_csv(path, encoding="latin1", dtype={"gateway_id": "string"})
+        try:
+            return pd.read_csv(path, encoding="utf-8", dtype={"gateway_id": "string"})
+        except UnicodeDecodeError:
+            log.info("%s is not UTF-8; reading as Latin-1", path.name)
+            return pd.read_csv(path, encoding="latin1", dtype={"gateway_id": "string"})
+    except (pd.errors.ParserError, pd.errors.EmptyDataError) as error:
+        raise DataError(f"{path.name}: cannot be read as CSV ({error})") from None
 
 
-def _missing_optional(path: Path, columns: list[str], date_columns: list[str], report: dict[str, object]) -> pd.DataFrame:
+def _missing_optional(path: Path, columns: list[str], date_columns: list[str],
+                      report: dict[str, object]) -> pd.DataFrame:
     """Empty frame with the right columns and UTC dtypes for an optional file that is absent."""
     log.warning("optional input not found: %s; ranking continues without it", path.name)
     report.setdefault("missing_optional_files", []).append(path.name)  # type: ignore[union-attr]
