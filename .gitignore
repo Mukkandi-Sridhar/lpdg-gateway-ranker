@@ -19,3 +19,4 @@ predictions_baseline.csv
 
 # LPDG PDFs dropped in the repo root by mistake (the resume PDF is committed on purpose)
 /0[0-9]-*.pdf
+.coverage
