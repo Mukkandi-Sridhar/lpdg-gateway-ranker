@@ -26,13 +26,13 @@ docker compose up --build
 ```
 
 The first build takes about 1.5 minutes. The container then:
-1. ranks every week (about 20 seconds)
+1. ranks every week (about 4 seconds; the API is healthy about 8 seconds after start)
 2. checks `output/predictions.csv` with LPDG's `validate_submission.py` (look for `OK` in the log)
 3. serves the API on http://localhost:8000
 
 To use another data folder, run `DATA_DIR=/path/to/data docker compose up --build`. To use another port, add `PORT=9000`.
 
-**Without Docker** (Python 3.11 or newer, macOS or Linux):
+**Without Docker** (Python 3.11 or 3.12, macOS or Linux; the pinned pandas/pyarrow have no wheels for 3.13+):
 
 ```bash
 make install
@@ -43,7 +43,7 @@ make run
 The same steps without make:
 
 ```bash
-python -m venv .venv && .venv/bin/pip install -r requirements.txt
+python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m gateway_ranker.cli predict --data /path/to/data
 .venv/bin/python validate_submission.py predictions.csv
 DATA_DIR=/path/to/data .venv/bin/python -m uvicorn api.main:create_app --factory --port 8000
@@ -114,8 +114,8 @@ Measured on an Apple-silicon laptop:
 
 | What | Time |
 |---|---|
-| `predict` (all weeks, full dataset) | about 4 s; about 20 s in Docker on the same machine |
-| `POST /run` | about 4 s. It is synchronous; a second call during a run gets 409 |
+| `predict` (all weeks, full dataset) | about 4 s, in Docker too |
+| `POST /run` | about 4 s (5 s in Docker). It is synchronous; a second call during a run gets 409 |
 | Any GET | under 30 ms. It reads the materialised results, not the raw data |
 
 ## Layout

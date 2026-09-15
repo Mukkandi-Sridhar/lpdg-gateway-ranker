@@ -2,7 +2,7 @@
 name = "gateway-ranker"
 version = "0.1.0"
 description = "Weekly field-visit ranking for LPDG gateways, served by a REST API"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"  # pinned pyarrow 17 has no wheels for 3.13+
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

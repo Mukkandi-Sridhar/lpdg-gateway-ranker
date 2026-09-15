@@ -28,7 +28,7 @@ Ranked from most to least likely to cost money.
    Meter reads stop at 2026-01-26, visits are a biased sample, and the review is one opinion on
    one day.
 
-7. **`POST /run` rebuilds everything and blocks its caller** for about 4 s (about 20 s in Docker). This is fine for one run a
+7. **`POST /run` rebuilds everything and blocks its caller** for about 4 s (about 5 s in Docker). This is fine for one run a
    week; with several years of telemetry it would need to be incremental.
 
 8. **A flat reference means any rise counts.** If a metric never moved in days 8–28 (std 0),

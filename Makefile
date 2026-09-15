@@ -1,11 +1,13 @@
 PYTHON ?= .venv/bin/python
+# The pinned pandas/numpy/pyarrow ship wheels for Python 3.11 and 3.12 only.
+BOOTSTRAP ?= python3.12
 DATA ?= data
 PORT ?= 8000
 
 .PHONY: install predict validate api run test compare docker
 
-install:  ## create .venv (Python 3.11+) and install the pinned dependencies
-	python3 -m venv .venv
+install:  ## create .venv with Python 3.12 (make install BOOTSTRAP=python3.11 also works)
+	$(BOOTSTRAP) -m venv .venv
 	.venv/bin/pip install -r requirements.txt
 
 predict:  ## rank every week: writes predictions.csv and output/results.json

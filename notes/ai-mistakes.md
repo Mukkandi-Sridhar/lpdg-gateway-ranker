@@ -53,6 +53,15 @@ Source material for AI-USAGE.md.
   predictions.csv and results.json. No test had looked at file permissions.
 - **Fix:** `os.chmod(tmp, 0o644)` before the rename, plus an assertion in `test_end_to_end`.
 
+## 7. README promised "Python 3.11 or newer" (2026-09-15)
+- **What the AI wrote:** README and Makefile told reviewers any Python 3.11+ works, and
+  `make install` ran plain `python3`.
+- **How it was caught:** before the clean-clone rehearsal, a wheel check showed pyarrow 17
+  has no wheels for 3.13 and none of the three pins has 3.14 wheels. `python3` on this Mac is 3.14,
+  so `make install` would have tried to build pandas from source.
+- **Fix:** the Makefile uses `python3.12` (overridable), the README says 3.11 or 3.12,
+  `requires-python` is `<3.13`, and Docker stays the recommended path.
+
 ## 4. Test assumed noise-free fixtures (2026-09-15)
 - **What the AI wrote:** a test expecting the reason to lead with "no data for 5 hours".
 - **How it was caught:** the random noise in the fixture flagged 14 anomalous hours, which
