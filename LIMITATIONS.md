@@ -9,7 +9,8 @@ Ranked from most to least likely to cost money.
 2. **Silence cannot tell *why* a gateway went quiet.** A failing gateway, a dead SIM, a
    power cut at the site and a gap in LPDG's own monitoring all look the same. There is no
    region-wide gap (0 of 540 region-days below half their usual rows), but a problem shared by one building or
-   one mobile cell would still send a technician to each gateway in it.
+   one mobile cell would still send a technician to each gateway in it. A gap across most of the fleet is flagged as a
+   warning (run summary and `GET /health`), but it does not change the picks.
 
 3. **The weights and the "low evidence" line are judgement, not fitted.** Silence dominates:
    in most weeks 11–14 of the 15 picks are driven by it. The line of 10 points is only

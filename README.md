@@ -96,7 +96,12 @@ with no code changes.
 make test
 ```
 
-This runs 61 tests in about 20 seconds. They use small synthetic data built in
+This runs 71 tests in about 15 seconds; `make coverage` reports 96% line coverage and
+`make lint` runs ruff. `make install` installs `requirements-dev.txt` (runtime plus test
+tools); the Docker image installs only `requirements.txt`. On GitHub, every push runs lint,
+tests and a Docker build (`.github/workflows/tests.yml`).
+
+The tests use small synthetic data built in
 `tests/fixtures.py` and never real dataset rows, so they run without `./data`. The one
 exception checks the baseline port against LPDG's script on the real data, and it skips
 cleanly when `./data` is absent.
@@ -108,6 +113,7 @@ cleanly when `./data` is absent.
 | `test_hot_reload.py` | A new month dropped into the data folder is picked up by `POST /run` without a restart |
 | `test_regression_filler_pick.py` | A bug we found: a low-evidence pick blocked a real fault the following week |
 | `test_regression_silent_gateway.py` | The baseline's blind spot: a silent gateway cannot be picked |
+| `test_error_handling.py` | Code-review findings: a half-copied or corrupt data file is reported by name, data and settings problems get different error codes, non-UTC weeks are refused, fleet-wide silence raises a warning |
 | `test_baseline_port.py` | The ported baseline gives the official script's numbers exactly |
 | `test_loading.py`, `test_improved_ranker.py`, `test_rankers.py`, `test_config.py` | Unit tests |
 
@@ -135,6 +141,7 @@ gateway_ranker/
   pipeline.py      rank every week, write outputs atomically
   cli.py           python -m gateway_ranker.cli predict
 api/main.py        FastAPI app
+api/schemas.py     response models (the schemas shown at /docs)
 scripts/           explore_data.py (data findings), compare_to_baseline.py,
                    decision_numbers.py (every other number quoted in DECISIONS/LIMITATIONS)
 run.sh             one command: Docker build + rank + validate + serve

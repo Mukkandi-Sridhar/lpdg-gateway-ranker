@@ -1,6 +1,7 @@
 # API reference
 
-Base URL: `http://localhost:8000`. Interactive docs are at `/docs`.
+Base URL: `http://localhost:8000`. Interactive docs with every response schema are at `/docs`
+(`/openapi.json` for tools).
 All responses are JSON. Errors always carry a human-readable `detail`.
 
 Gateway IDs are accepted in either format, `0A00000000FF` or `0A:00:00:00:00:FF`, in any
@@ -130,7 +131,8 @@ curl -X POST localhost:8000/run
   "latest_week": "2026-03-30",
   "rows": 120,
   "duration_sec": 3.8,
-  "data_months": ["2025-08", "…", "2026-03"]
+  "data_months": ["2025-08", "…", "2026-03"],
+  "warnings": []
 }
 ```
 
@@ -141,8 +143,12 @@ Behaviour worth knowing:
 - **All or nothing.** Outputs are written to temporary files and renamed into place only
   after every week is ranked. A failed run leaves the previous rankings being served, and
   `GET /health` shows the error in `last_run_error`.
-- **Refuses bad data** rather than ranking it. For example: an empty or column-less month file,
-  malformed IDs or dates, or telemetry that does not reach the last scored week.
+- **Refuses bad data** rather than ranking it, and names the file. For example: a half-copied or
+  corrupt parquet, Excel or CSV file, an empty or column-less month file, malformed IDs or dates,
+  or telemetry that does not reach the last scored week.
+- **Warns about network-wide gaps.** If more than half of the reporting gateways lost at least
+  half of a week's telemetry, `warnings` says so: silence-based picks for that week are
+  unreliable. The picks themselves are not changed. The delivered data produces no warnings.
 
 | Status | `error` | When |
 |---|---|---|
@@ -184,7 +190,7 @@ curl localhost:8000/health
   "run_in_progress": false,
   "last_run_error": null,
   "last_run": {"finished_at": "2026-09-15T06:33:45+00:00", "ranker": "improved",
-               "latest_week": "2026-03-30", "duration_sec": 3.8},
+               "latest_week": "2026-03-30", "duration_sec": 3.8, "warnings": []},
   "stale": false
 }
 ```
