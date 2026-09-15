@@ -19,18 +19,21 @@ reason for each, and serves the result through a REST API.
 
 Put LPDG's `data` folder at `./data`. It is not in this repository. Then use one of these.
 
-**With Docker** (nothing else needed):
+**With Docker** (nothing else needed), one command:
 
 ```bash
-docker compose up --build
+./run.sh
 ```
+
+`./run.sh` is `docker compose up --build`, plus a check that the data folder exists. Use
+`./run.sh --data /somewhere/else` for another data folder.
 
 The first build takes about 1.5 minutes. The container then:
 1. ranks every week (about 4 seconds; the API is healthy about 8 seconds after start)
 2. checks `output/predictions.csv` with LPDG's `validate_submission.py` (look for `OK` in the log)
 3. serves the API on http://localhost:8000
 
-To use another data folder, run `DATA_DIR=/path/to/data docker compose up --build`. To use another port, add `PORT=9000`.
+Plain `docker compose up --build` works too; set `DATA_DIR=/path/to/data` for another folder and `PORT=9000` for another port.
 
 **Without Docker** (Python 3.11 or 3.12, macOS or Linux; the pinned pandas/pyarrow have no wheels for 3.13+):
 
@@ -132,7 +135,9 @@ gateway_ranker/
   pipeline.py      rank every week, write outputs atomically
   cli.py           python -m gateway_ranker.cli predict
 api/main.py        FastAPI app
-scripts/           explore_data.py (data findings), compare_to_baseline.py
+scripts/           explore_data.py (data findings), compare_to_baseline.py,
+                   decision_numbers.py (every other number quoted in DECISIONS/LIMITATIONS)
+run.sh             one command: Docker build + rank + validate + serve
 tests/             unit, API, end-to-end and regression tests
 baseline_3sigma.py, validate_submission.py   LPDG's scripts, unchanged
 ```

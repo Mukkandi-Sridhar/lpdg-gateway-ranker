@@ -1,7 +1,8 @@
 # Decisions
 
-Five choices, what else I could have done, and why I did not. Numbers come from
-`scripts/explore_data.py` and `scripts/compare_to_baseline.py` on the delivered data.
+Five choices, what else I could have done, and why I did not. Every number here can be
+reproduced on the delivered data with `scripts/explore_data.py`,
+`scripts/compare_to_baseline.py` and `scripts/decision_numbers.py`.
 
 ---
 
