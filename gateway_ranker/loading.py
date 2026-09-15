@@ -15,6 +15,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
@@ -48,8 +49,17 @@ def normalize_gateway_id(raw: str) -> str:
 
 
 def normalize_gateway_ids(ids: pd.Series) -> pd.Series:
-    """Vectorised version of normalize_gateway_id, without validation (see checks.require_valid_ids)."""
-    return ids.astype("string").str.strip().str.replace(":", "", regex=False).str.upper()
+    """Vectorised normalisation, without validation (see checks.require_valid_ids).
+
+    Works on the distinct values only: telemetry has 1.4 million rows but about 320 IDs.
+    """
+    codes, uniques = pd.factorize(ids)
+    if len(uniques) == 0:
+        return pd.Series(None, index=ids.index, dtype=object)
+    cleaned = pd.Series(uniques, dtype=object).astype(str).str.strip().str.replace(":", "", regex=False).str.upper()
+    values = cleaned.to_numpy(dtype=object)[codes]
+    values[codes == -1] = None  # blank cells stay blank
+    return pd.Series(values, index=ids.index, dtype=object)
 
 
 def available_before(df: pd.DataFrame, date_col: str, monday: pd.Timestamp) -> pd.DataFrame:
@@ -64,13 +74,17 @@ def available_before(df: pd.DataFrame, date_col: str, monday: pd.Timestamp) -> p
 
 @dataclass
 class Dataset:
-    """All inputs, cleaned. `report` records what loading found and did."""
+    """All inputs, cleaned. `report` records what loading found and did.
+
+    `first_seen` is each gateway's first telemetry timestamp, indexed by gateway_id.
+    """
 
     telemetry: pd.DataFrame
     master: pd.DataFrame
     meter_reads: pd.DataFrame
     visits: pd.DataFrame
     review: pd.DataFrame
+    first_seen: pd.Series
     report: dict[str, object] = field(default_factory=dict)
 
     def before(self, monday: pd.Timestamp) -> Dataset:
@@ -85,6 +99,7 @@ class Dataset:
             meter_reads=available_before(self.meter_reads, "week_start", monday),
             visits=visits,
             review=available_before(self.review, "reviewed_on", monday),
+            first_seen=self.first_seen[self.first_seen < monday],
             report=self.report,
         )
 
@@ -96,8 +111,9 @@ def load_dataset(data_dir: Path | str) -> Dataset:
         raise DataError(f"data folder not found: {data_dir}")
     report: dict[str, object] = {"data_dir": str(data_dir)}
     telemetry = load_telemetry(data_dir, report)
+    first_seen = telemetry.groupby("gateway_id")["ts"].min()
     master = load_master(data_dir)
-    unknown = sorted(set(telemetry["gateway_id"]) - set(master["gateway_id"]))
+    unknown = sorted(set(first_seen.index) - set(master["gateway_id"]))
     report["telemetry_ids_not_in_master"] = len(unknown)
     if unknown:
         log.warning("%d telemetry gateways are missing from gateway_master, e.g. %s", len(unknown), unknown[:3])
@@ -107,6 +123,7 @@ def load_dataset(data_dir: Path | str) -> Dataset:
         meter_reads=load_meter_reads(data_dir, report),
         visits=load_field_visits(data_dir, report),
         review=load_engineer_review(data_dir, report),
+        first_seen=first_seen,
         report=report,
     )
 
@@ -130,7 +147,7 @@ def load_telemetry(data_dir: Path, report: dict[str, object] | None = None) -> p
     rows_read = len(df)
 
     df["gateway_id"] = normalize_gateway_ids(df["gateway_id"])
-    require_valid_ids(df["gateway_id"], "telemetry")
+    require_valid_ids(pd.Series(df["gateway_id"].unique(), dtype=object), "telemetry")
     df["ts"] = parse_utc(df["ts_utc"], "telemetry", "ts_utc")
     require_non_negative(df, ["offline_duration_sec", "disconnection_cnt", "reboot_cnt"], "telemetry")
 

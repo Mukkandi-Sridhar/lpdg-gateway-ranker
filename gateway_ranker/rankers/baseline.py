@@ -49,7 +49,7 @@ class BaselineRanker:
         breach_rows = exceeded[exceeded.any(axis=1)]
         first_metric = breach_rows.idxmax(axis=1).groupby(ids[breach_rows.index]).first()
 
-        known = sorted(set(data.master["gateway_id"]) | set(tel["gateway_id"]))
+        known = sorted(set(data.master["gateway_id"]) | set(data.first_seen.index))
         scores = []
         for gateway_id in known:
             if gateway_id not in breaches.index:

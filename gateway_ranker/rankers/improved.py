@@ -4,7 +4,7 @@
 
 - silence: hours with no telemetry row in the last 7 days, divided by 168. Counted only
   for gateways that are in service and have reported before, and only from their install
-  date onward. baseline_3sigma.py never sees these gateways because it scores rows that exist.
+  date onward. baseline_3sigma.py never sees these hours because it scores rows that exist.
 - anomaly: hours in the last 7 days where disconnections, offline time or reboots rose
   more than 3 standard deviations above the gateway's own normal, divided by 168, capped
   at 1. "Normal" is measured on days 8-28 before Monday, so a fault filling the whole last
@@ -17,7 +17,7 @@ week that led to the pick counts, so a low-evidence filler pick never blocks a l
 """
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 
 import pandas as pd
 
@@ -31,6 +31,7 @@ SIGMA = 3.0
 RECENT_DAYS = 7
 REFERENCE_DAYS = 28  # reference window = days 8-28 before Monday
 HOURS_PER_WEEK = RECENT_DAYS * 24
+WEEK = pd.Timedelta(days=RECENT_DAYS)
 
 # Metric -> plain words for reasons. Dict order breaks ties when naming the main metric.
 METRICS = {
@@ -41,24 +42,42 @@ METRICS = {
 
 
 class ImprovedRanker:
+    """Scores one week at a time.
+
+    The episode check needs the scores of earlier weeks, which the pipeline has usually just
+    computed. They are cached per loaded dataset: a Dataset from a new load_dataset() call
+    (a new `report` object) empties the cache, so a new run never sees old signals.
+    """
+
     name = "improved"
+
+    def __init__(self) -> None:
+        self._cache: dict[pd.Timestamp, pd.DataFrame] = {}
+        self._source: object | None = None
 
     def score_week(self, data: Dataset, monday: pd.Timestamp,
                    previous_picks: Mapping[pd.Timestamp, list[str]]) -> list[GatewayScore]:
-        signals = week_signals(data, monday)
-        in_episode = still_in_episode(data, monday, previous_picks, signals)
+        signals = self._signals_for(data, monday)
+        in_episode = still_in_episode(monday, previous_picks, lambda week: self._signals_for(data, week)["score"])
         return [_to_score(row, in_episode.get(row.Index)) for row in signals.itertuples()]
+
+    def _signals_for(self, data: Dataset, monday: pd.Timestamp) -> pd.DataFrame:
+        if data.report is not self._source:
+            self._cache, self._source = {}, data.report
+        if monday not in self._cache:
+            self._cache[monday] = week_signals(data.before(monday), monday)
+        return self._cache[monday]
 
 
 def week_signals(data: Dataset, monday: pd.Timestamp) -> pd.DataFrame:
     """One row per known gateway with its silence and anomaly numbers for the week before `monday`."""
-    recent_start = monday - pd.Timedelta(days=RECENT_DAYS)
+    recent_start = monday - WEEK
     reference_start = monday - pd.Timedelta(days=REFERENCE_DAYS)
     telemetry = data.telemetry[data.telemetry["ts"] >= reference_start]
     recent = telemetry[telemetry["ts"] >= recent_start]
     reference = telemetry[telemetry["ts"] < recent_start]
 
-    reported = pd.Index(data.telemetry["gateway_id"].unique())
+    reported = data.first_seen.index  # gateways with any telemetry before Monday
     master = data.master.set_index("gateway_id")[["installed_on", "decommissioned_on"]]
     ids = master.index.union(reported)
     out = master.reindex(ids)  # gateways missing from the master get blank dates: treated as in service
@@ -84,8 +103,7 @@ def week_signals(data: Dataset, monday: pd.Timestamp) -> pd.DataFrame:
     limit = stats.mean() + SIGMA * stats.std()
     over = recent[metrics].to_numpy() > limit.reindex(recent["gateway_id"]).to_numpy()
     flagged = pd.DataFrame(over, columns=metrics, index=recent.index)
-    by_gateway = flagged.groupby(recent["gateway_id"])
-    per_metric = by_gateway.sum().reindex(ids, fill_value=0).astype(int)
+    per_metric = flagged.groupby(recent["gateway_id"]).sum().reindex(ids, fill_value=0).astype(int)
     out["flagged_hours"] = flagged.any(axis=1).groupby(recent["gateway_id"]).sum().reindex(ids, fill_value=0).astype(int)
     for metric in metrics:
         out[f"flagged_{metric}"] = per_metric[metric]
@@ -97,16 +115,18 @@ def week_signals(data: Dataset, monday: pd.Timestamp) -> pd.DataFrame:
     return out.sort_index()
 
 
-def still_in_episode(data: Dataset, monday: pd.Timestamp, previous_picks: Mapping[pd.Timestamp, list[str]],
-                     current: pd.DataFrame) -> dict[str, pd.Timestamp]:
-    """Gateways picked in an earlier week whose fault has not had a healthy week since -> week picked."""
+def still_in_episode(monday: pd.Timestamp, previous_picks: Mapping[pd.Timestamp, list[str]],
+                     scores_at: Callable[[pd.Timestamp], pd.Series]) -> dict[str, pd.Timestamp]:
+    """Gateways picked in an earlier week with no healthy week since -> the week they were picked.
+
+    `scores_at(m)` returns every gateway's score for the week before Monday `m`.
+    """
     last_pick: dict[str, pd.Timestamp] = {}
     for week, gateway_ids in previous_picks.items():
         if week < monday:
             for gateway_id in gateway_ids:
                 last_pick[gateway_id] = max(week, last_pick.get(gateway_id, week))
 
-    scores_by_week_end = {monday: current["score"]}
     in_episode = {}
     for gateway_id, picked in sorted(last_pick.items()):
         # Start with the week that led to the pick. If that week was already healthy, the pick
@@ -114,10 +134,8 @@ def still_in_episode(data: Dataset, monday: pd.Timestamp, previous_picks: Mappin
         week_end = picked
         healthy = False
         while week_end <= monday and not healthy:
-            if week_end not in scores_by_week_end:
-                scores_by_week_end[week_end] = week_signals(data.before(week_end), week_end)["score"]
-            healthy = scores_by_week_end[week_end].get(gateway_id, 0.0) < LOW_EVIDENCE_BELOW
-            week_end += pd.Timedelta(days=RECENT_DAYS)
+            healthy = scores_at(week_end).get(gateway_id, 0.0) < LOW_EVIDENCE_BELOW
+            week_end += WEEK
         if not healthy:
             in_episode[gateway_id] = picked
     return in_episode
