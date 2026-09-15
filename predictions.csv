@@ -1,0 +1,121 @@
+week_start,rank,gateway_id,score,reason
+2026-02-02,1,0A568E79FEF6,47.32,No data for 159 of the last 168 hours.
+2026-02-02,2,0AB6B45C775A,44.64,No data for 98 of the last 168 hours; also 52 hours of unusually long offline time vs its own normal.
+2026-02-02,3,022C6F326E3B,43.15,No data for 139 of the last 168 hours; also 6 hours of unusually long offline time vs its own normal.
+2026-02-02,4,0AC437023B18,43.15,No data for 145 of the last 168 hours.
+2026-02-02,5,0E1B6F4DBA34,41.96,No data for 73 of the last 168 hours; also 68 hours of unusual disconnections vs its own normal.
+2026-02-02,6,02C0F45F31E7,40.48,No data for 136 of the last 168 hours.
+2026-02-02,7,0A4E33E2692B,40.48,No data for 87 of the last 168 hours; also 49 hours of unusual disconnections vs its own normal.
+2026-02-02,8,06F49BD8F572,39.88,No data for 106 of the last 168 hours; also 28 hours of unusual disconnections vs its own normal.
+2026-02-02,9,02892F51E1CB,36.01,No data for 119 of the last 168 hours; also 2 hours of unusually long offline time vs its own normal.
+2026-02-02,10,02D4DFEF402A,35.42,No data for 119 of the last 168 hours.
+2026-02-02,11,064AED1EC0AA,35.42,No data for 82 of the last 168 hours; also 37 hours of unusual disconnections vs its own normal.
+2026-02-02,12,06C0D5E3BCDB,33.04,No data for 111 of the last 168 hours.
+2026-02-02,13,06FFEC2EFA5E,33.04,No data for 56 of the last 168 hours; also 55 hours of unusually long offline time vs its own normal.
+2026-02-02,14,06787526FEB3,32.74,59 hours of unusual disconnections vs its own normal; also no data for 51 of the last 168 hours.
+2026-02-02,15,069A98DEEB1D,31.55,No data for 106 of the last 168 hours.
+2026-02-09,1,0AA296FF247D,35.42,No data for 74 of the last 168 hours; also 45 hours of unusual disconnections vs its own normal.
+2026-02-09,2,02423E0E6E9F,34.82,No data for 113 of the last 168 hours; also 4 hours of unusually long offline time vs its own normal.
+2026-02-09,3,024570739DE0,34.52,No data for 116 of the last 168 hours.
+2026-02-09,4,02D7623552C8,30.95,No data for 85 of the last 168 hours; also 19 hours of unusually long offline time vs its own normal.
+2026-02-09,5,0A68F38A6ACF,29.76,62 hours of unusual disconnections vs its own normal; also no data for 38 of the last 168 hours.
+2026-02-09,6,0E55F28AB569,25.6,No data for 73 of the last 168 hours; also 13 hours of unusual reboots vs its own normal.
+2026-02-09,7,06F2CDBD2C41,23.21,No data for 67 of the last 168 hours; also 11 hours of unusually long offline time vs its own normal.
+2026-02-09,8,02314F9A9168,22.92,No data for 67 of the last 168 hours; also 10 hours of unusually long offline time vs its own normal.
+2026-02-09,9,0ADD02AB693D,22.02,No data for 71 of the last 168 hours; also 3 hours of unusually long offline time vs its own normal.
+2026-02-09,10,0A25F6E3466C,21.43,No data for 69 of the last 168 hours; also 3 hours of unusual reboots vs its own normal.
+2026-02-09,11,0E8F36DAB9C2,20.54,No data for 66 of the last 168 hours; also 3 hours of unusually long offline time vs its own normal.
+2026-02-09,12,064C94C771EC,20.24,No data for 66 of the last 168 hours; also 2 hours of unusual disconnections vs its own normal.
+2026-02-09,13,0ED1E9DBD593,20.24,No data for 61 of the last 168 hours; also 7 hours of unusual disconnections vs its own normal.
+2026-02-09,14,0A68A2032450,19.64,No data for 56 of the last 168 hours; also 10 hours of unusually long offline time vs its own normal.
+2026-02-09,15,0A7AC5BDAF86,19.64,37 hours of unusual disconnections vs its own normal; also no data for 29 of the last 168 hours.
+2026-02-16,1,0AA2F2CAB50B,48.21,No data for 83 of the last 168 hours; also 79 hours of unusual disconnections vs its own normal.
+2026-02-16,2,065B928716CD,46.73,No data for 82 of the last 168 hours; also 75 hours of unusual disconnections vs its own normal.
+2026-02-16,3,02D49A34B2FE,40.48,No data for 83 of the last 168 hours; also 53 hours of unusually long offline time vs its own normal.
+2026-02-16,4,0AE6BF39C720,25.89,47 hours of unusual disconnections vs its own normal; also no data for 40 of the last 168 hours.
+2026-02-16,5,0228A99EE35A,25.3,No data for 50 of the last 168 hours; also 35 hours of unusually long offline time vs its own normal.
+2026-02-16,6,06238EE3BE6C,24.7,45 hours of unusually long offline time vs its own normal; also no data for 38 of the last 168 hours.
+2026-02-16,7,060EE3CB4779,22.92,51 hours of unusually long offline time vs its own normal; also no data for 26 of the last 168 hours.
+2026-02-16,8,0E9761D8EB58,22.02,No data for 68 of the last 168 hours; also 6 hours of unusually long offline time vs its own normal.
+2026-02-16,9,0E6D2CBAED41,19.05,No data for 61 of the last 168 hours; also 3 hours of unusual disconnections vs its own normal.
+2026-02-16,10,06F170E6BB03,18.15,42 hours of unusually long offline time vs its own normal; also no data for 19 of the last 168 hours.
+2026-02-16,11,02817D5E40EE,17.86,No data for 55 of the last 168 hours; also 5 hours of unusually long offline time vs its own normal.
+2026-02-16,12,0AA18F330F59,17.56,No data for 53 of the last 168 hours; also 6 hours of unusually long offline time vs its own normal.
+2026-02-16,13,024ED433BF7D,17.26,No data for 50 of the last 168 hours; also 8 hours of unusually long offline time vs its own normal.
+2026-02-16,14,02091DF7CCB8,16.96,No data for 52 of the last 168 hours; also 5 hours of unusual reboots vs its own normal.
+2026-02-16,15,02097AB58D3C,16.96,No data for 38 of the last 168 hours; also 19 hours of unusual disconnections vs its own normal.
+2026-02-23,1,0EF023E6452D,28.87,No data for 53 of the last 168 hours; also 44 hours of unusual reboots vs its own normal.
+2026-02-23,2,0E69C64B6E57,25.3,54 hours of unusual disconnections vs its own normal; also no data for 31 of the last 168 hours.
+2026-02-23,3,0A3983033084,24.7,No data for 50 of the last 168 hours; also 33 hours of unusual disconnections vs its own normal.
+2026-02-23,4,0A55DA266F71,18.45,No data for 38 of the last 168 hours; also 24 hours of unusual disconnections vs its own normal.
+2026-02-23,5,02F18EEE028A,17.56,No data for 31 of the last 168 hours; also 28 hours of unusual disconnections vs its own normal.
+2026-02-23,6,0E2728C481CA,16.67,No data for 41 of the last 168 hours; also 15 hours of unusually long offline time vs its own normal.
+2026-02-23,7,0EE317BA7C52,16.67,No data for 43 of the last 168 hours; also 13 hours of unusually long offline time vs its own normal.
+2026-02-23,8,0E1D7CA1DB0C,15.48,35 hours of unusually long offline time vs its own normal; also no data for 17 of the last 168 hours.
+2026-02-23,9,0EC67072883C,15.48,No data for 46 of the last 168 hours; also 6 hours of unusually long offline time vs its own normal.
+2026-02-23,10,0AFFC263C0D9,15.18,No data for 40 of the last 168 hours; also 11 hours of unusual reboots vs its own normal.
+2026-02-23,11,065C003A8D0C,14.88,No data for 43 of the last 168 hours; also 7 hours of unusually long offline time vs its own normal.
+2026-02-23,12,028B24EADDAD,14.58,No data for 34 of the last 168 hours; also 15 hours of unusually long offline time vs its own normal.
+2026-02-23,13,0ED5057ECE3F,14.58,No data for 40 of the last 168 hours; also 9 hours of unusual reboots vs its own normal.
+2026-02-23,14,0A5E96449374,13.99,No data for 46 of the last 168 hours; also 1 hour of unusually long offline time vs its own normal.
+2026-02-23,15,0E5303C82FCB,13.69,33 hours of unusual disconnections vs its own normal; also no data for 13 of the last 168 hours.
+2026-03-02,1,024DD3A9ADCA,35.42,No data for 60 of the last 168 hours; also 59 hours of unusual reboots vs its own normal.
+2026-03-02,2,0A4673793B3E,28.57,No data for 91 of the last 168 hours; also 5 hours of unusually long offline time vs its own normal.
+2026-03-02,3,02043B6BA08B,26.79,No data for 59 of the last 168 hours; also 31 hours of unusual disconnections vs its own normal.
+2026-03-02,4,0A8407CF4D85,25.0,53 hours of unusual disconnections vs its own normal; also no data for 31 of the last 168 hours.
+2026-03-02,5,06C77FEA9550,23.21,41 hours of unusual disconnections vs its own normal; also no data for 37 of the last 168 hours.
+2026-03-02,6,023ADDDECF84,17.86,No data for 54 of the last 168 hours; also 6 hours of unusually long offline time vs its own normal.
+2026-03-02,7,0ABC8E60F4C1,16.67,No data for 31 of the last 168 hours; also 25 hours of unusual disconnections vs its own normal.
+2026-03-02,8,0AFE702BB093,16.37,No data for 55 of the last 168 hours.
+2026-03-02,9,06B641B75B29,15.48,No data for 49 of the last 168 hours; also 3 hours of unusually long offline time vs its own normal.
+2026-03-02,10,0EEA98D1BFDB,15.48,39 hours of unusual disconnections vs its own normal; also no data for 13 of the last 168 hours.
+2026-03-02,11,0A6390E0FBA4,14.88,No data for 43 of the last 168 hours; also 7 hours of unusually long offline time vs its own normal.
+2026-03-02,12,0E03D8F69853,14.58,No data for 45 of the last 168 hours; also 4 hours of unusual disconnections vs its own normal.
+2026-03-02,13,0A22622C2592,12.8,No data for 39 of the last 168 hours; also 4 hours of unusual disconnections vs its own normal.
+2026-03-02,14,0EE071F7B24A,12.8,No data for 27 of the last 168 hours; also 16 hours of unusual disconnections vs its own normal.
+2026-03-02,15,025B7AD352CF,12.5,No data for 31 of the last 168 hours; also 11 hours of unusually long offline time vs its own normal.
+2026-03-09,1,02F5CE7705EC,30.06,69 hours of unusually long offline time vs its own normal; also no data for 32 of the last 168 hours.
+2026-03-09,2,0E9DC914D8DF,29.46,No data for 95 of the last 168 hours; also 4 hours of unusual disconnections vs its own normal.
+2026-03-09,3,06AEE181F595,19.05,40 hours of unusual disconnections vs its own normal; also no data for 24 of the last 168 hours.
+2026-03-09,4,0EA0447DA91C,13.69,No data for 33 of the last 168 hours; also 13 hours of unusually long offline time vs its own normal.
+2026-03-09,5,06FFEC2EFA5E,12.8,No data for 39 of the last 168 hours; also 4 hours of unusual disconnections vs its own normal.
+2026-03-09,6,0ED0849FD6D8,12.8,No data for 35 of the last 168 hours; also 8 hours of unusually long offline time vs its own normal.
+2026-03-09,7,0257E855DBCE,12.5,No data for 28 of the last 168 hours; also 14 hours of unusual disconnections vs its own normal.
+2026-03-09,8,0E9511383176,12.5,No data for 42 of the last 168 hours.
+2026-03-09,9,02478CD90F3A,12.2,No data for 27 of the last 168 hours; also 14 hours of unusual disconnections vs its own normal.
+2026-03-09,10,0A4C884F240A,11.9,No data for 28 of the last 168 hours; also 12 hours of unusual reboots vs its own normal.
+2026-03-09,11,06132D7396F8,11.61,No data for 38 of the last 168 hours; also 1 hour of unusual disconnections vs its own normal.
+2026-03-09,12,0AF51D7D0F73,11.61,No data for 32 of the last 168 hours; also 7 hours of unusually long offline time vs its own normal.
+2026-03-09,13,0E752F1B295C,11.31,No data for 30 of the last 168 hours; also 8 hours of unusual reboots vs its own normal.
+2026-03-09,14,028A7DBC9820,11.01,No data for 36 of the last 168 hours; also 1 hour of unusually long offline time vs its own normal.
+2026-03-09,15,0E89F7D5B5BD,10.71,No data for 25 of the last 168 hours; also 11 hours of unusual reboots vs its own normal.
+2026-03-16,1,0A182EFD3C61,48.51,No data for 90 of the last 168 hours; also 73 hours of unusual disconnections vs its own normal.
+2026-03-16,2,060C5773A61B,44.05,No data for 77 of the last 168 hours; also 71 hours of unusual disconnections vs its own normal.
+2026-03-16,3,0EE587927263,41.37,No data for 91 of the last 168 hours; also 48 hours of unusual disconnections vs its own normal.
+2026-03-16,4,0253BB40EDA6,19.94,35 hours of unusual disconnections vs its own normal; also no data for 32 of the last 168 hours.
+2026-03-16,5,0EF47B410B41,13.99,24 hours of unusual disconnections vs its own normal; also no data for 23 of the last 168 hours.
+2026-03-16,6,0E6D2CBAED41,12.5,No data for 38 of the last 168 hours; also 4 hours of unusually long offline time vs its own normal.
+2026-03-16,7,0EF437108E63,12.5,No data for 34 of the last 168 hours; also 8 hours of unusual disconnections vs its own normal.
+2026-03-16,8,0ED5057ECE3F,12.2,No data for 37 of the last 168 hours; also 4 hours of unusual disconnections vs its own normal.
+2026-03-16,9,0EA52A2A7581,11.01,No data for 31 of the last 168 hours; also 6 hours of unusual disconnections vs its own normal.
+2026-03-16,10,0634F78DB4C5,10.71,No data for 29 of the last 168 hours; also 7 hours of unusually long offline time vs its own normal.
+2026-03-16,11,0ED1E9DBD593,10.71,No data for 32 of the last 168 hours; also 4 hours of unusual disconnections vs its own normal.
+2026-03-16,12,0230EEF72435,10.42,27 hours of unusually long offline time vs its own normal; also no data for 8 of the last 168 hours.
+2026-03-16,13,0A184A2E46B7,10.42,21 hours of unusually long offline time vs its own normal; also no data for 14 of the last 168 hours.
+2026-03-16,14,0AB5F9C21BF8,10.42,No data for 32 of the last 168 hours; also 3 hours of unusually long offline time vs its own normal.
+2026-03-16,15,0E2728C481CA,10.42,No data for 28 of the last 168 hours; also 7 hours of unusual reboots vs its own normal.
+2026-03-23,1,0656377B3078,21.43,38 hours of unusual disconnections vs its own normal; also no data for 34 of the last 168 hours.
+2026-03-23,2,02478CD90F3A,17.26,No data for 47 of the last 168 hours; also 11 hours of unusually long offline time vs its own normal.
+2026-03-23,3,0E5F36E62604,16.96,No data for 56 of the last 168 hours; also 1 hour of unusually long offline time vs its own normal.
+2026-03-23,4,0E0E2996F51A,12.8,24 hours of unusual disconnections vs its own normal; also no data for 19 of the last 168 hours.
+2026-03-23,5,0239AD51B7AF,12.5,No data for 28 of the last 168 hours; also 14 hours of unusually long offline time vs its own normal.
+2026-03-23,6,0687F36E02C6,12.5,28 hours of unusually long offline time vs its own normal; also no data for 14 of the last 168 hours.
+2026-03-23,7,0616F247083A,11.9,No data for 23 of the last 168 hours; also 17 hours of unusually long offline time vs its own normal.
+2026-03-23,8,0E3BFC559D93,11.9,No data for 28 of the last 168 hours; also 12 hours of unusually long offline time vs its own normal.
+2026-03-23,9,0AD276FC5E27,11.61,No data for 27 of the last 168 hours; also 12 hours of unusual disconnections vs its own normal.
+2026-03-23,10,021406F56396,11.31,No data for 20 of the last 168 hours; also 18 hours of unusual disconnections vs its own normal.
+2026-03-23,11,02388A18854F,11.01,No data for 29 of the last 168 hours; also 8 hours of unusually long offline time vs its own normal.
+2026-03-23,12,029A2B32D17E,11.01,No data for 30 of the last 168 hours; also 7 hours of unusually long offline time vs its own normal.
+2026-03-23,13,061A4322745C,11.01,No data for 27 of the last 168 hours; also 10 hours of unusual disconnections vs its own normal.
+2026-03-23,14,0EE78E4317BB,11.01,No data for 29 of the last 168 hours; also 8 hours of unusually long offline time vs its own normal.
+2026-03-23,15,06FFEC2EFA5E,10.71,No data for 35 of the last 168 hours; also 1 hour of unusually long offline time vs its own normal.
