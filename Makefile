@@ -1,0 +1,30 @@
+PYTHON ?= .venv/bin/python
+DATA ?= data
+PORT ?= 8000
+
+.PHONY: install predict validate api run test compare docker
+
+install:  ## create .venv (Python 3.11+) and install the pinned dependencies
+	python3 -m venv .venv
+	.venv/bin/pip install -r requirements.txt
+
+predict:  ## rank every week: writes predictions.csv and output/results.json
+	$(PYTHON) -m gateway_ranker.cli predict --data $(DATA)
+
+validate:  ## check predictions.csv with LPDG's validator
+	$(PYTHON) validate_submission.py predictions.csv
+
+api:  ## serve the API on http://localhost:$(PORT)
+	DATA_DIR=$(DATA) $(PYTHON) -m uvicorn api.main:create_app --factory --port $(PORT) --no-access-log
+
+run: predict validate api  ## everything without Docker
+
+test:  ## all tests; the one test needing the real dataset skips if ./data is absent
+	$(PYTHON) -m pytest -q
+
+compare:  ## run the official baseline and show how our picks differ
+	$(PYTHON) baseline_3sigma.py --data $(DATA) --out predictions_baseline.csv
+	$(PYTHON) scripts/compare_to_baseline.py --data $(DATA)
+
+docker:  ## everything in Docker
+	docker compose up --build

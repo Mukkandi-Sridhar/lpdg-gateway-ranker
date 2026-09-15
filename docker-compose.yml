@@ -1,0 +1,20 @@
+services:
+  ranker:
+    build: .
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      RANKER: ${RANKER:-improved}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      # The data folder is mounted, not copied into the image. Use another folder with
+      # DATA_DIR=/path/to/data docker compose up
+      - ${DATA_DIR:-./data}:/app/data:ro
+      # predictions.csv and results.json appear in ./output on the host
+      - ./output:/app/output
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3

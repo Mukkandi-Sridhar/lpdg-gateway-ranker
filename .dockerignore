@@ -1,0 +1,14 @@
+data/
+output/
+docs-from-lpdg/
+notes/
+tests/
+.venv/
+.git/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.zip
+*.pdf
+predictions*.csv
+.DS_Store
