@@ -1,0 +1,9 @@
+[project]
+name = "gateway-ranker"
+version = "0.1.0"
+description = "Weekly field-visit ranking for LPDG gateways, served by a REST API"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
