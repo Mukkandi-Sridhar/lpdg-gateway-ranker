@@ -74,7 +74,8 @@ def main() -> None:
     tel_ids = set(tel["gateway_id"])
     print("gateways in master:", len(master), "| unique ids:", master["gateway_id"].nunique())
     decom = master[master["decommissioned_on"].notna()]
-    print("decommissioned:", len(decom), "| dates:", decom["decommissioned_on"].min(), "->", decom["decommissioned_on"].max())
+    print("decommissioned:", len(decom), "| dates:",
+          decom["decommissioned_on"].min(), "->", decom["decommissioned_on"].max())
     print("master ids not in telemetry:", len(set(master["gateway_id"]) - tel_ids),
           "| telemetry ids not in master:", len(tel_ids - set(master["gateway_id"])))
     last_seen = tel.groupby("gateway_id")["ts"].max()

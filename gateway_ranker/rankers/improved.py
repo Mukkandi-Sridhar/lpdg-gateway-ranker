@@ -104,7 +104,8 @@ def week_signals(data: Dataset, monday: pd.Timestamp) -> pd.DataFrame:
     over = recent[metrics].to_numpy() > limit.reindex(recent["gateway_id"]).to_numpy()
     flagged = pd.DataFrame(over, columns=metrics, index=recent.index)
     per_metric = flagged.groupby(recent["gateway_id"]).sum().reindex(ids, fill_value=0).astype(int)
-    out["flagged_hours"] = flagged.any(axis=1).groupby(recent["gateway_id"]).sum().reindex(ids, fill_value=0).astype(int)
+    any_metric = flagged.any(axis=1).groupby(recent["gateway_id"]).sum()
+    out["flagged_hours"] = any_metric.reindex(ids, fill_value=0).astype(int)
     for metric in metrics:
         out[f"flagged_{metric}"] = per_metric[metric]
     out["main_metric"] = per_metric[metrics].idxmax(axis=1)

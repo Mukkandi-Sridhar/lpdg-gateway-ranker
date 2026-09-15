@@ -34,7 +34,8 @@ def make_telemetry(gateways: list[str] = GATEWAYS, start: str = "2026-01-01", en
 def silence(telemetry: pd.DataFrame, gateway_id: str, start: str, end: str) -> pd.DataFrame:
     """Remove a gateway's rows in [start, end): the gateway stops reporting."""
     ts = pd.to_datetime(telemetry["ts_utc"], utc=True)
-    gone = (telemetry["gateway_id"] == gateway_id) & (ts >= pd.Timestamp(start, tz="UTC")) & (ts < pd.Timestamp(end, tz="UTC"))
+    in_window = (ts >= pd.Timestamp(start, tz="UTC")) & (ts < pd.Timestamp(end, tz="UTC"))
+    gone = (telemetry["gateway_id"] == gateway_id) & in_window
     return telemetry[~gone].reset_index(drop=True)
 
 
@@ -85,7 +86,8 @@ def write_data_dir(root: Path, telemetry: pd.DataFrame, master: pd.DataFrame | N
         folder = root / "telemetry" / f"month={month}"
         folder.mkdir(parents=True, exist_ok=True)
         part.to_parquet(folder / "part-0.parquet", index=False)
-    (master if master is not None else make_master()).to_csv(root / "gateway_master.csv", index=False, encoding="latin1")
+    master = master if master is not None else make_master()
+    master.to_csv(root / "gateway_master.csv", index=False, encoding="latin1")
     if meter_reads is not None:
         meter_reads.to_csv(root / "meter_read_success.csv", index=False)
     if visits is not None:

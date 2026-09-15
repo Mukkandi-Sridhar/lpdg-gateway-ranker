@@ -18,10 +18,10 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from gateway_ranker.config import load_settings  # noqa: E402
-from gateway_ranker.loading import load_dataset, normalize_gateway_ids  # noqa: E402
-from gateway_ranker.pipeline import run_pipeline  # noqa: E402
-from gateway_ranker.rankers.improved import week_signals  # noqa: E402
+from gateway_ranker.config import load_settings
+from gateway_ranker.loading import load_dataset, normalize_gateway_ids
+from gateway_ranker.pipeline import run_pipeline
+from gateway_ranker.rankers.improved import week_signals
 
 WEEK = pd.Timedelta(days=7)
 

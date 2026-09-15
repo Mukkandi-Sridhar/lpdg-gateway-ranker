@@ -63,6 +63,7 @@ class BaselineRanker:
             metric = first_metric.get(gateway_id, "no metric over 3 sigma")
             reason = (f"{n} hour(s) beyond 3 sigma of this gateway's own 28-day baseline in the last 7 days; "
                       f"first breach on {metric}")
-            components = {"breaches": float(n), **{f"breaches_{m}": float(per_metric.at[gateway_id, m]) for m in METRICS}}
+            components = {"breaches": float(n)}
+            components.update({f"breaches_{m}": float(per_metric.at[gateway_id, m]) for m in METRICS})
             scores.append(GatewayScore(gateway_id, float(n), reason, components))
         return scores

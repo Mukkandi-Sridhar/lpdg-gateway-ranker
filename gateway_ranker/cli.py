@@ -40,7 +40,8 @@ def main(argv: list[str] | None = None) -> int:
         log.error("run failed: %s", error)
         print(f"error: {error}", file=sys.stderr)
         return 2
-    print(json.dumps({k: summary[k] for k in ["ranker", "scored_weeks", "latest_week", "rows", "duration_sec"]}, indent=1))
+    shown = ["ranker", "scored_weeks", "latest_week", "rows", "duration_sec", "warnings"]
+    print(json.dumps({k: summary[k] for k in shown}, indent=1))
     print(f"wrote {settings.predictions_path} and {settings.results_path}")
     return 0
 

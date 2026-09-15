@@ -9,3 +9,17 @@ pythonpath = ["."]
 testpaths = ["tests"]
 # starlette 0.41's TestClient uses an alias that newer anyio deprecates; not our code.
 filterwarnings = ["ignore:The anyio.abc.BlockingPortal alias is deprecated:DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["gateway_ranker", "api"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+# LPDG's scripts are vendored unchanged.
+extend-exclude = ["baseline_3sigma.py", "validate_submission.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+# The reason prefix "Low evidence – filling slot:" uses an en dash on purpose.
+ignore = ["RUF001"]
