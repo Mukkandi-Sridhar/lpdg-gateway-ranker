@@ -26,3 +26,34 @@ Source material for AI-USAGE.md.
   Timestamp arithmetic emitted "generic unit" deprecation warnings.
 - **How it was caught:** warnings in the exploration script output.
 - **Fix:** pinned numpy 2.1.3.
+
+## 3. Episode suppression blocked real faults after a filler pick (2026-09-15)
+- **What the AI wrote:** `still_in_episode()` treated any pick as the start of a fault
+  episode, and only checked weeks *after* the pick for a healthy week.
+- **How it was caught:** `test_end_to_end` failed. The silent gateway was never ranked first,
+  because it had been picked as low-evidence filler (score 3.57) the week before it went dark.
+- **Fix:** also check the week that led to the pick. Kept as
+  `tests/test_regression_filler_pick.py`.
+
+## 5. "30 silent gateways the baseline cannot see" was wrong (2026-09-15)
+- **What the AI said:** repeated the prep guide's headline, that 30 gateways had no telemetry
+  in the week before 2026-02-02 and so were invisible to the baseline. It even wrote this
+  into a test docstring.
+- **How it was caught:** `scripts/compare_to_baseline.py` showed our ranker picked 0 fully
+  dark gateways. A breakdown showed every zero-row gateway in every scored week was either
+  not yet installed or already decommissioned: 0 in service.
+- **What is true:** the real blind spot is heavy *partial* silence. 14–17 in-service
+  gateways a week miss at least 84 of 168 hours, and the baseline scores them only on the
+  hours they did report.
+
+## 6. Atomic writes produced owner-only files (2026-09-15)
+- **What the AI wrote:** `_write_atomically()` used `tempfile.mkstemp()` and then `os.replace()`.
+  `mkstemp` creates files with mode 0600, and the rename keeps it.
+- **How it was caught:** `ls -la output/` after the Docker run showed `-rw-------` on
+  predictions.csv and results.json. No test had looked at file permissions.
+- **Fix:** `os.chmod(tmp, 0o644)` before the rename, plus an assertion in `test_end_to_end`.
+
+## 4. Test assumed noise-free fixtures (2026-09-15)
+- **What the AI wrote:** a test expecting the reason to lead with "no data for 5 hours".
+- **How it was caught:** the random noise in the fixture flagged 14 anomalous hours, which
+  outweighed 5 silent hours, so the anomaly led the reason. The ranker was right and the test was wrong.
