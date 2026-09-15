@@ -15,17 +15,23 @@ from gateway_ranker.checks import DataError
 from gateway_ranker.loading import Dataset
 
 VISITS_PER_WEEK = 15
-FILLER_REASON = "Low evidence: no warning signs found; fills slot {rank} of 15. Would not dispatch."
+LOW_EVIDENCE_PREFIX = "Low evidence – filling slot: "
 
 
 @dataclass(frozen=True)
 class GatewayScore:
-    """One gateway's score for one week. `components` are the parts that add up to `score`."""
+    """One gateway's score for one week.
+
+    `components` are the numbers behind the score (shown by GET /gateways/{id}).
+    `eligible=False` means the gateway must not be picked this week (for example
+    decommissioned, or already visited in the same fault episode); `reason` says why.
+    """
 
     gateway_id: str
     score: float
     reason: str
     components: dict[str, float] = field(default_factory=dict)
+    eligible: bool = True
 
 
 @dataclass(frozen=True)
@@ -38,7 +44,7 @@ class Ranker(Protocol):
 
     def score_week(self, data: Dataset, monday: pd.Timestamp,
                    previous_picks: Mapping[pd.Timestamp, list[str]]) -> list[GatewayScore]:
-        """Score every candidate gateway for the week starting `monday`.
+        """Score every known gateway for the week starting `monday`.
 
         `data` is already cut to what was known before `monday` (Dataset.before).
         `previous_picks` holds the top 15 chosen in earlier scored weeks, oldest first.
@@ -47,20 +53,19 @@ class Ranker(Protocol):
 
 
 def select_top(scores: list[GatewayScore], n: int = VISITS_PER_WEEK) -> list[RankedGateway]:
-    """Highest score first; ties broken by gateway_id so the output is deterministic.
+    """Pick the n highest-scoring eligible gateways.
 
-    Picks with score <= 0 carry no evidence; their reason says so honestly.
+    Ties are broken by gateway_id ascending, so the output never depends on input order.
+    A pick with score <= 0 carries no evidence, and its reason says so.
     """
-    if len(scores) < n:
-        raise DataError(f"only {len(scores)} candidate gateways to rank; need at least {n}")
-    ordered = sorted(scores, key=lambda s: (-s.score, s.gateway_id))[:n]
-    return [
-        RankedGateway(
-            gateway_id=s.gateway_id,
-            score=s.score,
-            reason=s.reason if s.score > 0 else FILLER_REASON.format(rank=rank),
-            components=s.components,
-            rank=rank,
-        )
-        for rank, s in enumerate(ordered, start=1)
-    ]
+    eligible = [s for s in scores if s.eligible]
+    if len(eligible) < n:
+        raise DataError(f"only {len(eligible)} eligible gateways to rank; need at least {n}")
+    ordered = sorted(eligible, key=lambda s: (-s.score, s.gateway_id))[:n]
+    ranked = []
+    for rank, s in enumerate(ordered, start=1):
+        reason = s.reason
+        if s.score <= 0 and not reason.startswith(LOW_EVIDENCE_PREFIX):
+            reason = LOW_EVIDENCE_PREFIX + "no warning signs found. Would not dispatch."
+        ranked.append(RankedGateway(s.gateway_id, s.score, reason, s.components, s.eligible, rank))
+    return ranked
