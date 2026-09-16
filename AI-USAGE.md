@@ -12,8 +12,8 @@ the data is in `.gitignore` from the first commit.
 **Claude Code.** Pair-programming in this repository, for about a day. It wrote first drafts
 of the loader, the rankers, the pipeline, the API, the tests, the Docker setup and the
 documentation, and it ran the scripts, the tests and the container while I read the output.
-Its commits are marked with a `Co-Authored-By` trailer, so the history shows exactly which
-work it touched.
+Roughly speaking, it touched every file in `gateway_ranker/`, `api/`, `tests/` and `scripts/`,
+and the first draft of every document here except this one.
 
 ## What I decided
 
