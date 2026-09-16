@@ -14,6 +14,7 @@ reason for each, and serves the result through a REST API.
 | [LIMITATIONS.md](LIMITATIONS.md) | What it cannot do, and what two more weeks would fix |
 | [API.md](API.md) | Every endpoint, with curl examples and error codes |
 | [AI-USAGE.md](AI-USAGE.md) | What AI tools were used for, and what they got wrong |
+| [Sridhar_Mukkandi_Resume.pdf](Sridhar_Mukkandi_Resume.pdf) | My resume |
 
 ## Quick start
 
