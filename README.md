@@ -143,7 +143,8 @@ gateway_ranker/
 api/main.py        FastAPI app
 api/schemas.py     response models (the schemas shown at /docs)
 scripts/           explore_data.py (data findings), compare_to_baseline.py,
-                   decision_numbers.py (every other number quoted in DECISIONS/LIMITATIONS)
+                   decision_numbers.py (every other number quoted in DECISIONS/LIMITATIONS),
+                   make_demo_month.py (a stand-in month, to rehearse new data arriving)
 run.sh             one command: Docker build + rank + validate + serve
 tests/             unit, API, end-to-end and regression tests
 baseline_3sigma.py, validate_submission.py   LPDG's scripts, unchanged
