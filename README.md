@@ -5,8 +5,12 @@ reason for each, and serves the result through a REST API.
 
 **Part 2 area: B — Software development.**
 
-📹 **Recording (7 min):** TODO: add the unlisted link. It shows the API, a new month picked up by
-`POST /run` without a restart, and the week of 2026-02-02 compared with the baseline.
+📹 **Recording:** https://drive.google.com/drive/folders/1VmbWEHd1jGTRXCKePZ81lz-A6s_0PUOl
+
+It walks through one command starting everything, this week's 15 and why each one is there,
+deliberate failures, a month of telemetry removed and put back while the service keeps
+running, swapping in LPDG's baseline through the same API, the tests, and how these picks
+differ from the baseline's.
 
 | Document | What is in it |
 |---|---|
